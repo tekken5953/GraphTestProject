@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".MainActivity">
+
+    <RelativeLayout
+        android:id="@+id/chartContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/pm_graph_bg"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="40dp">
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/lineChart"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginTop="5dp"
+            android:nestedScrollingEnabled="true"
+            android:orientation="horizontal" />
+    </RelativeLayout>
+
+    <!--    <TextView-->
+    <!--        android:id="@+id/selectedValue"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:textColor="@color/black"-->
+    <!--        android:textSize="17sp"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/lineChart"-->
+    <!--        android:layout_marginTop="30dp"/>-->
+
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:gravity="center"
+        android:hint="y axis value"
+        android:inputType="number"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textColorHint="#cccccc"
+        android:backgroundTint="@color/black"
+        app:layout_constraintBottom_toTopOf="@+id/addBtn" />
+
+    <Button
+        android:id="@+id/addBtn"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginBottom="10dp"
+        android:text="add entry"
+        app:layout_constraintBottom_toTopOf="@+id/clearBtn"/>
+
+    <Button
+        android:id="@+id/clearBtn"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginBottom="10dp"
+        android:text="clear graph"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
