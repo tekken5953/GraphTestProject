@@ -5,50 +5,68 @@ import android.content.Context
 import android.graphics.Color
 import android.view.animation.AlphaAnimation
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.highlight.Highlight
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import java.text.SimpleDateFormat
+import kotlin.math.roundToInt
 
-class LineGraphClass(private val context: Context,private val isGradient: Boolean) {
+
+class LineGraphClass(private val context: Context, private val isGradient: Boolean) {
     private lateinit var mChart: LineChart
     private lateinit var lineData: LineData
 
-    private var CHART_MADE_TIME = 0L
-    private val xLabelList = ArrayList<String>()
+    private var charMadeTime = 0L
 
     fun getInstance(chartView: LineChart): LineGraphClass {
         mChart = chartView
         lineData = LineData()
         setYAxis()
         setXAxis()
+        chartView.setNoDataText("데이터를 불러오는 중입니다")
+        chartView.setNoDataTextColor(Color.WHITE)
         return this
     }
 
     fun setChart(): LineGraphClass {
         try {
             mChart.apply {
-                setBackgroundColor(Color.parseColor("#40FFFFFF")) // 배경 색
-                this.legend.isEnabled = false
+//                setBackgroundResource(R.drawable.pm_graph_bg)
+                setBackgroundColor(Color.TRANSPARENT) // 배경 색
+                legend.isEnabled = false
                 description.isEnabled = false // description 표시
-//                setTouchEnabled(false) // 그래프 터치
+                setTouchEnabled(true) // 그래프 터치
+                isClickable = false
                 axisRight.isEnabled = false
                 axisLeft.isEnabled = true
                 isDragEnabled = true
-                zoom(1.3f,0f,1.3f,0f)
-                isHighlightPerTapEnabled = false
+                zoom(4.5f, 0f, 4.5f, 0f)
+                isHighlightPerTapEnabled = true
+                minOffset = 35f
                 setScaleEnabled(false)
                 setPinchZoom(false) // pinch zoom
-                this.minOffset = 15f
-//                enableScroll()
-                mChart.setVisibleXRangeMaximum(5f)
+                setVisibleXRangeMaximum(5f)
                 isDoubleTapToZoomEnabled = false
-                isLongClickable = true
-                this.isAutoScaleMinMaxEnabled = false
-             }
+                isLongClickable = false
+                isAutoScaleMinMaxEnabled = false
+//                setDrawMarkers(true)
+//                val mMarker = CustomMarkerView(context,R.layout.custom_maker)
+//                marker = mMarker
+//                setOnChartValueSelectedListener(object : OnChartValueSelectedListener{
+//                    override fun onValueSelected(e: Entry?, h: Highlight?) {
+//                        mMarker.refreshContent(e!!,h)
+//                    }
+//
+//                    override fun onNothingSelected() {
+//                    }
+//                })
+            }
         } catch (e: Exception) {
             e.stackTraceToString()
         }
@@ -59,70 +77,76 @@ class LineGraphClass(private val context: Context,private val isGradient: Boolea
     private fun setXAxis() {
         mChart.xAxis.apply {
             position = XAxis.XAxisPosition.BOTTOM // X축을 그래프 아래로 위치하기
-            textSize = 10f // 레이블 텍스트 사이즈
-            textColor = Color.GRAY // 레이블 텍스트 색
-            axisLineColor = Color.GRAY // 축 색
+            textSize = 12f // 레이블 텍스트 사이즈
+            textColor = Color.WHITE // 레이블 텍스트 색
+            axisLineColor = Color.WHITE // 축 색
             setDrawAxisLine(false) // 그래프 뒷 배경의 그리드 표시
             setDrawGridLines(false) // 그래프 뒷 배경의 그리드 표시
-            spaceMax = 2f // 레이블 간격
-            isGranularityEnabled = true // 축 레이블 표시 간격
+            setLabelCount(24,false)
+            isGranularityEnabled = false // 축 레이블 표시 간격
             granularity = 1f // 축 레이블 표시 간격
-            this.axisMaximum = 5f
-            this.setAvoidFirstLastClipping(true)
-            setAvoidFirstLastClipping(true)
+            setDrawLabels(true)
+            setAvoidFirstLastClipping(false)
             valueFormatter = XAxisValueFormat()
         }
     }
 
     private fun setYAxis() {
         mChart.axisLeft.apply {
-            textSize = 10f
-            textColor = Color.GRAY
-            axisLineColor = Color.GRAY
+            textSize = 12f
+            textColor = Color.WHITE
+            axisLineColor = Color.WHITE
             setDrawAxisLine(false)
-            setDrawGridLines(false)
+            setDrawGridLines(true)
+            spaceMax = 5f
+            labelCount = 5
+            enableGridDashedLine(25f,15f,0f)
+            gridColor = Color.parseColor("#80FFFFFF")
         }
+    }
+
+    private fun getBlue(): Int {
+        return ResourcesCompat.getColor(context.resources,R.color.graph_blue,null)
     }
 
     fun addDataSet(sort: String, entry: ArrayList<Entry>): LineGraphClass {
         try {
-            val applyColor = if (sort == "미세먼지") Color.parseColor("#FF0000")
-            else Color.parseColor("#cc0004ff")
-
-            val dataSet = LineDataSet(ArrayList(), sort) // DataSet 생성
+            val dataSet = LineDataSet(null, sort) // DataSet 생성
             dataSet.apply {
-                mode = LineDataSet.Mode.CUBIC_BEZIER // 선 그리는 방식
-                color = applyColor // 선 색
-                valueTextColor = applyColor // 데이터 수치 텍스트 색
-                valueTextSize = 12f // 데이터 수치 텍스트 사이즈
+                label = sort
+                mode = LineDataSet.Mode.LINEAR // 선 그리는 방식
+                color = Color.TRANSPARENT // 선 색
+                valueTextColor = Color.WHITE // 데이터 수치 텍스트 색
+                valueTextSize = 14f // 데이터 수치 텍스트 사이즈
                 lineWidth = 2f // 선 굵기
                 setDrawCircleHole(false)
                 setDrawCircles(true)
-                circleRadius = 2.5F
-                setCircleColor(applyColor)
+                highLightColor = Color.TRANSPARENT
+                valueFormatter = DataSetValueFormat()
+                circleRadius = 6F
+                setCircleColor(Color.WHITE)
                 if (isGradient) {
                     this.setDrawFilled(true)
-                    this.fillAlpha = 70
-                    this.fillDrawable = if (sort == "미세먼지") ContextCompat.getDrawable(context, R.drawable.graph_fill_red)
-                    else ContextCompat.getDrawable(context, R.drawable.graph_fill_blue)
+                    this.fillDrawable = ContextCompat.getDrawable(
+                        context,
+                        R.drawable.graph_fill_gradient
+                    )
                 }
             }
             lineData.addDataSet(dataSet)
             entry.forEach {
-                lineData.addEntry(it,if (sort == "미세먼지") 0 else 1)
-                lineData.notifyDataChanged()
-                mChart.notifyDataSetChanged()
+                lineData.addEntry(it, 0)
             }
-        } catch (e: Exception) {
-            e.stackTraceToString()
-        }
+            lineData.notifyDataChanged()
+            mChart.notifyDataSetChanged()
+        } catch (e: Exception) { e.stackTraceToString() }
 
         return this
     }
 
     fun createGraph() {
         mChart.data = lineData // 데이터 적용
-        val fadeIn = AlphaAnimation(0f,1f).apply {
+        val fadeIn = AlphaAnimation(0f, 1f).apply {
             duration = 400
             repeatCount = 0
         }
@@ -134,39 +158,37 @@ class LineGraphClass(private val context: Context,private val isGradient: Boolea
 
     class DataSetValueFormat : IndexAxisValueFormatter() {
         override fun getFormattedValue(value: Float): String {
-            return value.toInt().toString()
+            return value.roundToInt().toString()
         }
     }
 
     //X축 엔트리 포멧
     inner class XAxisValueFormat : IndexAxisValueFormatter() {
         override fun getFormattedValue(value: Float): String {
-            return chartTimeDivider(xLabelList, value.toInt())
+//            return chartTimeDivider(value)
+            return "${if (value.toInt() + 1 == 24) 0 else value.toInt() + 1}시"
         }
     }
 
     // 현재 시간기준으로 그래프의 X축 라벨을 포맷합니다
-    private fun chartTimeDivider(arrayList: ArrayList<String>, mCount: Int): String {
+    private fun chartTimeDivider(value: Float): String {
         try {
-            @SuppressLint("SimpleDateFormat") val simpleDateFormat = SimpleDateFormat("hh:mm")
-            CHART_MADE_TIME = System.currentTimeMillis()
-            val lArray: Long
-            return when (mCount) {
-                0 -> {
-                    lArray = CHART_MADE_TIME
-                    arrayList.add(0, simpleDateFormat.format(lArray))
-                    arrayList[0]
-                }
-                else -> {
-                    lArray = CHART_MADE_TIME + (mCount-1) * 60 * 60 * 1000
-                    arrayList.add(mCount-1, simpleDateFormat.format(lArray))
-                    arrayList[mCount-1]
-                }
-            }
+            @SuppressLint("SimpleDateFormat") val simpleDateFormat = SimpleDateFormat("H시")
+            charMadeTime = System.currentTimeMillis()
+            val lArray: Long = charMadeTime + (value.toInt()) * 60 * 60 * 1000
+            return simpleDateFormat.format(lArray)
         } catch (e: IndexOutOfBoundsException) {
+            e.stackTraceToString()
         } catch (e: NullPointerException) {
+            e.stackTraceToString()
+        } catch (e: NegativeArraySizeException) {
+            e.stackTraceToString()
         }
-        return " "
+        return ""
     }
 
+    fun clear(): LineGraphClass {
+        lineData.clearValues()
+        return this
+    }
 }
